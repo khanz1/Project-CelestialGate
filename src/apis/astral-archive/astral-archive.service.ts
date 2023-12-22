@@ -2,19 +2,21 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import {
   UploadFile,
-  ErrorUploadFile,
   UploadFileProps,
   SupabaseStorageError,
   BucketType,
+  CreateOwnedFileProps,
 } from './astral-archive.interface';
 import * as Crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Logger } from '@nestjs/common';
 import { fromBuffer } from 'file-type';
+import { OwnedFile } from './models/owned-files.model';
+import { InjectModel } from '@nestjs/sequelize';
 
 @Injectable()
 export class AstralArchiveService {
@@ -22,7 +24,10 @@ export class AstralArchiveService {
   private readonly SERVICE_URL: string;
   private readonly logger = new Logger(AstralArchiveService.name);
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    @InjectModel(OwnedFile) private readonly ownedFileModel: typeof OwnedFile,
+  ) {
     const SUPABASE_URL = this.configService.get<string>('SUPABASE_URL');
     const SUPABASE_KEY = this.configService.get<string>('SUPABASE_KEY');
     this.SERVICE_URL = this.configService.get<string>('STORAGE_SERVER_URL');
@@ -33,10 +38,9 @@ export class AstralArchiveService {
   async uploadFile({
     directoryPath,
     file,
-  }: UploadFileProps): Promise<UploadFile | ErrorUploadFile> {
-    const directories = !!directoryPath ? directoryPath + '/' : '/';
-    this.logger.log(`Filename: ${file.originalname}`);
-    this.logger.log(`Uploading file to ${directories}`);
+  }: UploadFileProps): Promise<UploadFile> {
+    const directories = directoryPath ? directoryPath + '/' : '/';
+    this.logger.log(`filename: ${file.originalname}. size: ${file.size}`);
 
     const fileType = await this.getFileType(file);
     const sixMB = 6 * 1024 * 1024;
@@ -50,8 +54,10 @@ export class AstralArchiveService {
     const fileName = splittedName.join('').slice(0, 25);
     const extension = splittedName[splittedName.length - 1];
     const safeFileName = fileName.replace(/\s/gi, '-').trim();
-    const fullFileName = `${directories}${safeFileName}-${id}.${extension.toLowerCase()}`;
+    const finalFileName = `${safeFileName}-${id}.${extension.toLowerCase()}`;
+    const fullFileName = `${directories}${finalFileName}`;
 
+    this.logger.log('uploading...');
     const { data, error } = await this.supabase.storage
       .from(fileType)
       .upload(fullFileName, file.buffer, {
@@ -61,6 +67,7 @@ export class AstralArchiveService {
     const uploadError = error as unknown as SupabaseStorageError;
 
     if (uploadError && uploadError.statusCode === '404') {
+      this.logger.log(`bucket ${fileType} not found, creating...`);
       await this.createSupabaseBucket(fileType);
       return this.uploadFile({
         file,
@@ -68,12 +75,15 @@ export class AstralArchiveService {
       });
     }
 
+    const {
+      data: { publicUrl },
+    } = this.supabase.storage.from(fileType).getPublicUrl(fullFileName);
+
     return {
-      statusCode: 200,
-      message: 'File uploaded successfully',
-      data: {
-        path: `${this.SERVICE_URL}/images/${data.path}`,
-      },
+      path: `${this.SERVICE_URL}/${fileType}/${data.path}`,
+      publicUrl,
+      fileName: finalFileName,
+      fileType: fileType,
     };
   }
 
@@ -106,5 +116,31 @@ export class AstralArchiveService {
     } else {
       return BucketType.FILE;
     }
+  }
+
+  async createOwnedFile(data: CreateOwnedFileProps) {
+    return this.ownedFileModel.create({
+      userId: data.userId,
+      fileName: data.fileName,
+      fileUrl: data.fileUrl,
+      fileType: data.fileType,
+      publicFileUrl: data.publicFileUrl,
+    });
+  }
+
+  async getFileList(userId: number) {
+    return this.ownedFileModel.findAndCountAll({
+      attributes: [
+        'id',
+        'fileName',
+        'fileUrl',
+        'publicFileUrl',
+        'fileType',
+        'createdAt',
+      ],
+      where: {
+        userId,
+      },
+    });
   }
 }

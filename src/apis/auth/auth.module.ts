@@ -1,4 +1,4 @@
-import { Module, Global } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { User } from './models/user.model';
@@ -7,12 +7,12 @@ import { ConfigModule } from '@nestjs/config';
 import { Helper } from './auth.helper';
 import { CacheModule } from '@nestjs/cache-manager';
 import { HttpModule } from '@nestjs/axios';
+import { OAuth } from './models/oauth.model';
 
-@Global()
 @Module({
   imports: [
     ConfigModule,
-    SequelizeModule.forFeature([User]),
+    SequelizeModule.forFeature([User, OAuth]),
     CacheModule.register(),
     HttpModule.register({
       timeout: 5000,

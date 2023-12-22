@@ -1,9 +1,8 @@
 export interface UploadFile {
-  statusCode: number;
-  message: string;
-  data: {
-    path: string;
-  };
+  path: string;
+  publicUrl: string;
+  fileName: string;
+  fileType: BucketType;
 }
 
 export interface UploadFileProps {
@@ -30,4 +29,12 @@ export enum BucketType {
   AUDIO = 'audios',
   DOCUMENT = 'documents',
   FILE = 'files',
+}
+
+export interface CreateOwnedFileProps {
+  userId: number;
+  fileName: string;
+  publicFileUrl: string;
+  fileUrl: string;
+  fileType: BucketType;
 }

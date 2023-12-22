@@ -5,7 +5,6 @@ import * as path from 'path';
 const NODE_ENV = (process.env.NODE_ENV || 'development').trim();
 const envPath = path.resolve(__dirname, `../../.env.${NODE_ENV}`);
 
-console.log({ envPath }, '<< e');
 dotenv.config({ path: envPath });
 
 export const HOST = process.env.DB_HOST || 'localhost';

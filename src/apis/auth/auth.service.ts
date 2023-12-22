@@ -8,13 +8,16 @@ import {
 import { User } from './models/user.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { SignUpDto } from './dto/sign-up.dto';
-import { MailerService } from '@nestjs-modules/mailer';
-import mjml2html from 'mjml';
 import { ConfigService } from '@nestjs/config';
 import { UniqueConstraintError, ValidationError } from 'sequelize';
 import { Helper } from './auth.helper';
 import { SignInDto } from './dto/sign-in.dto';
 import * as url from 'url';
+import { HttpService } from '@nestjs/axios';
+import { catchError, firstValueFrom } from 'rxjs';
+import { OAuth } from './models/oauth.model';
+import { OAUTH_PROVIDER } from './auth.types';
+import { nanoid } from 'nanoid';
 
 @Injectable()
 export class AuthService {
@@ -22,9 +25,10 @@ export class AuthService {
   private readonly CLIENT_URL = this.configService.get<string>('CLIENT_URL');
   constructor(
     @InjectModel(User) private readonly userModel: typeof User,
-    private readonly mailerService: MailerService,
+    @InjectModel(OAuth) private readonly oauthModel: typeof OAuth,
     private readonly configService: ConfigService,
     private helper: Helper,
+    private readonly httpService: HttpService,
   ) {}
   async signUp(data: SignUpDto) {
     const newUser = data as Partial<User>;
@@ -40,22 +44,7 @@ export class AuthService {
       });
 
       this.logger.log(`Validation URL: ${URI} will be sent to ${user.email}`);
-      await this.mailerService.sendMail({
-        to: user.email,
-        subject: 'Welcome to UniApp',
-        html: mjml2html(`
-          <mjml>
-            <mj-body>
-              <mj-section>
-                <mj-column>
-                  <mj-text> Hello ${user.username}</mj-text>
-                  <mj-text> Here is your validation URL: ${URI}</mj-text>
-                  <mj-text> Thanks!!!</mj-text>
-                </mj-column>
-              </mj-section>
-            </mj-body>
-          </mjml>`).html,
-      });
+
       return {
         accessToken: await this.helper.signToken({ uid: user.uid }),
       };
@@ -118,5 +107,81 @@ export class AuthService {
     } catch (err) {
       throw err;
     }
+  }
+
+  async signInGoogle(data: any) {
+    /*
+    {
+    access_token: 
+      'ya29.a0AfB_byDqAlZuY_8z81L8MBCFRNIs_kJqmzHH-HQL-syH9x8JY_aJo5Ol1sddPi6oKdxi9ILtxr8vUmiiGEb3VEQE0METeRgtPNMacKoaH8MAW4Irf6J0pvbda1MzkIq4DvOao-j_yXDz_zvtThrlTwV6wVmOeQ2S-bkVaCgYKATQSAQ8SFQHGX2MixwVansAzNmn6tdh1pKYDkw0171',
+    token_type: 'Bearer',
+    expires_in: 3599,
+    scope: 
+      'email profile openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+    authuser: '1',
+    prompt: 'none'
+  }
+  */
+
+    const response = await firstValueFrom(
+      this.httpService
+        .get('https://www.googleapis.com/oauth2/v3/userinfo', {
+          params: {
+            access_token: data.access_token,
+          },
+        })
+        .pipe(
+          catchError((error) => {
+            this.logger.error(error.response.data);
+            throw new InternalServerErrorException(
+              `we are experiencing issue, please try again later`,
+            );
+          }),
+        ),
+    );
+
+    const oauth = await this.oauthModel.findOne({
+      where: {
+        provider: OAUTH_PROVIDER.GOOGLE,
+        oauthId: response.data.sub,
+      },
+      include: [this.userModel],
+    });
+
+    if (oauth) {
+      const accessToken = await this.helper.signToken({ uid: oauth.User.uid });
+      return {
+        accessToken,
+        statusCode: 200,
+        message: `Login success`,
+      };
+    }
+
+    const user = await this.userModel.create({
+      username: response.data.email.split('@')[0],
+      email: response.data.email,
+      password: this.helper.hashPassword(nanoid(10)),
+      pictureUrl: response.data.picture,
+      isVerified: true,
+      isSubscribed: false,
+      status: 'active',
+    });
+
+    await this.oauthModel.create({
+      provider: OAUTH_PROVIDER.GOOGLE,
+      userId: user.id,
+      oauthId: response.data.sub,
+      name: response.data.name,
+      username: response.data.email.split('@')[0],
+      email: response.data.email,
+      pictureUrl: response.data.picture,
+    });
+
+    const accessToken = await this.helper.signToken({ uid: user.uid });
+    return {
+      accessToken,
+      statusCode: 201,
+      message: `Login success`,
+    };
   }
 }

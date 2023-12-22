@@ -12,3 +12,40 @@ CREATE TABLE auth_users
     created_at    TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE auth_oauth_list
+(
+    id               SERIAL PRIMARY KEY,
+    provider         VARCHAR(255),
+    user_id          INTEGER,
+    oauth_id         VARCHAR(255),
+    name             VARCHAR(255),
+    username         VARCHAR(255),
+    email            VARCHAR(255),
+    picture_url      VARCHAR(255),
+    oauth_created_at TIMESTAMP,
+    created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES auth_users (id)
+);
+
+CREATE TABLE logs_api (
+    id         SERIAL PRIMARY KEY,
+    text       VARCHAR(255),
+    operation  VARCHAR(255),
+    ip_address VARCHAR(255),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE aa_owned_files (
+    id         SERIAL PRIMARY KEY,
+    user_id    INTEGER,
+    file_name  VARCHAR(255),
+    file_url  VARCHAR(255),
+    file_type VARCHAR(255),
+    public_file_url VARCHAR(255),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES auth_users (id)
+);
