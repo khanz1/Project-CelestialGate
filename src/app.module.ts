@@ -14,6 +14,8 @@ import { GalacticPathModule } from './apis/galactic-path/galactic-path.module';
 import { Redirect } from './apis/galactic-path/model/redirect.model';
 import { RedirectLog } from './apis/galactic-path/model/redirect-log.model';
 import { Helper } from './utils/helper';
+        import pg from 'pg';
+
 
 @Module({
   imports: [
@@ -29,6 +31,7 @@ import { Helper } from './utils/helper';
       useFactory: (configService: ConfigService) => {
         return {
           dialect: configService.get('DB_DIALECT'),
+          dialectModule: pg,
           host: configService.get('DB_HOST'),
           port: configService.get('DB_PORT'),
           username: configService.get('DB_USERNAME'),
