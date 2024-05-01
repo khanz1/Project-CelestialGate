@@ -21,6 +21,9 @@
     "db:migrate:dev": "export NODE_ENV=development && npx ts-node scripts/migrations/pg-migrate",
     "db:migrate:undo:dev": "export NODE_ENV=development && npx ts-node scripts/migrations/pg-migrate-undo",
     "db:seed:dev": "set NODE_ENV=development && npx ts-node scripts/migrations/pg-seed-all",
+    "db:migrate:prod": "export NODE_ENV=production && npx ts-node scripts/migrations/pg-migrate",
+    "db:migrate:undo:prod": "export NODE_ENV=production && npx ts-node scripts/migrations/pg-migrate-undo",
+    "db:seed:prod": "set NODE_ENV=production && npx ts-node scripts/migrations/pg-seed-all",
     "db:re-init": "export NODE_ENV=development && npm run db:migrate:undo:dev && npm run db:migrate:dev && npm run db:seed:dev",
     "db:init": "export NODE_ENV=development && npm run db:migrate:dev && npm run db:seed:dev"
   },
