@@ -157,15 +157,24 @@ export class AuthService {
       };
     }
 
-    const user = await this.userModel.create({
-      username: response.data.email.split('@')[0],
-      email: response.data.email,
-      password: this.helper.hashPassword(nanoid(10)),
-      pictureUrl: response.data.picture,
-      isVerified: true,
-      isSubscribed: false,
-      status: 'active',
+    const [user, created] = await this.userModel.findOrCreate({
+      where: {
+        email: response.data.email,
+      },
+      defaults: {
+        username: response.data.email.split('@')[0],
+        email: response.data.email,
+        password: this.helper.hashPassword(nanoid(10)),
+        pictureUrl: response.data.picture,
+        isVerified: true,
+        isSubscribed: false,
+        status: 'active',
+      },
     });
+
+    if (!created) {
+      this.logger.log(`User already exist, updating the picture`);
+    }
 
     await this.oauthModel.create({
       provider: OAUTH_PROVIDER.GOOGLE,

@@ -10,6 +10,10 @@ import { User } from './apis/auth/models/user.model';
 import { OAuth } from './apis/auth/models/oauth.model';
 import { LogsApi } from './models/logs-api.model';
 import { OwnedFile } from './apis/astral-archive/models/owned-files.model';
+import { GalacticPathModule } from './apis/galactic-path/galactic-path.module';
+import { Redirect } from './apis/galactic-path/model/redirect.model';
+import { RedirectLog } from './apis/galactic-path/model/redirect-log.model';
+import { Helper } from './utils/helper';
 
 @Module({
   imports: [
@@ -30,14 +34,15 @@ import { OwnedFile } from './apis/astral-archive/models/owned-files.model';
           username: configService.get('DB_USERNAME'),
           password: configService.get('DB_PASSWORD'),
           database: configService.get('DB_DATABASE'),
-          models: [User, OAuth, LogsApi, OwnedFile],
+          models: [User, OAuth, LogsApi, OwnedFile, Redirect, RedirectLog],
           logging: (sql) => Logger.verbose(sql),
         };
       },
     }),
+    GalacticPathModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, Helper],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

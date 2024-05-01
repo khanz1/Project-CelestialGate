@@ -51,9 +51,6 @@ export class User extends Model {
   @Column({ defaultValue: false, field: 'is_verified' })
   isVerified: boolean;
 
-  @Column({ defaultValue: false, field: 'is_subscribed' })
-  isSubscribed: boolean;
-
   @Column({ defaultValue: 'on-boarding' })
   status: string;
 

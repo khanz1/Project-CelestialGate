@@ -21,7 +21,6 @@ const getUsers = (): Partial<User>[] => {
       password: bcrypt.hashSync('xavier', bcrypt.genSaltSync(10)),
       pictureUrl: 'https://i.imgur.com/0kZB9Xu.jpg',
       isVerified: true,
-      isSubscribed: true,
       status: 'active',
     },
   ];

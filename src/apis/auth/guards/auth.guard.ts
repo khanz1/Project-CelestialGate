@@ -9,8 +9,6 @@ import {
 import { Request } from 'express';
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from '../models/user.model';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
 import { Helper } from '../../../utils/helper';
 
 @Injectable()

@@ -5,9 +5,8 @@ CREATE TABLE auth_users
     username      VARCHAR(255) UNIQUE,
     email         VARCHAR(255) UNIQUE NOT NULL,
     password      VARCHAR(255)        NOT NULL,
-    picture_url   VARCHAR(255),
+    picture_url   TEXT,
     is_verified   BOOLEAN             NOT NULL DEFAULT false,
-    is_subscribed BOOLEAN             NOT NULL DEFAULT false,
     status        VARCHAR(255)        NOT NULL DEFAULT 'on-boarding',
     created_at    TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -48,4 +47,28 @@ CREATE TABLE aa_owned_files (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES auth_users (id)
+);
+
+CREATE TABLE gp_redirects (
+    id         SERIAL PRIMARY KEY,
+    from_url   VARCHAR(255),
+    to_url     VARCHAR(255),
+    active_from TIMESTAMP,
+    active_to   TIMESTAMP,
+    user_id    INTEGER,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES auth_users (id)
+);
+
+CREATE TABLE gp_redirects_logs (
+    id         SERIAL PRIMARY KEY,
+    redirect_id INTEGER,
+    ip_address VARCHAR(255),
+    query TEXT,
+    user_agent TEXT,
+    data TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (redirect_id) REFERENCES gp_redirects (id)
 );

@@ -1,3 +1,7 @@
+DROP TABLE IF EXISTS gp_redirects_logs;
+
+DROP TABLE IF EXISTS gp_redirects;
+
 DROP TABLE IF EXISTS logs_api;
 
 DROP TABLE IF EXISTS aa_owned_files;
