@@ -1,3 +1,5 @@
+import { Express } from 'express';
+
 export interface UploadFile {
   path: string;
   publicUrl: string;

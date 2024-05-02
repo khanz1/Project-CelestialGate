@@ -14,6 +14,7 @@ import { AstralArchiveService } from './astral-archive.service';
 import { UploadBodyDto } from './dto/upload-body.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { AuthRequest } from 'src/app.interface';
+import { Express } from 'express';
 
 @UseGuards(AuthGuard)
 @Controller('astral-archive')

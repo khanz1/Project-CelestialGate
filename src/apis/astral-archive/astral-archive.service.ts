@@ -17,6 +17,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { fromBuffer } from 'file-type';
 import { OwnedFile } from './models/owned-files.model';
 import { InjectModel } from '@nestjs/sequelize';
+import { Express } from 'express';
 
 @Injectable()
 export class AstralArchiveService {
