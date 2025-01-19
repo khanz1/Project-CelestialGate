@@ -4,10 +4,10 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { User } from './models/user.model';
 import { AuthController } from './auth.controller';
 import { ConfigModule } from '@nestjs/config';
-import { Helper } from './auth.helper';
 import { CacheModule } from '@nestjs/cache-manager';
 import { HttpModule } from '@nestjs/axios';
 import { OAuth } from './models/oauth.model';
+import { AuthHelper } from '@/utils/auth.helper';
 
 @Module({
   imports: [
@@ -20,6 +20,6 @@ import { OAuth } from './models/oauth.model';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, Helper],
+  providers: [AuthService, AuthHelper],
 })
 export class AuthModule {}

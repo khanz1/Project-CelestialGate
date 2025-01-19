@@ -1,9 +1,10 @@
 # environment
 .env
 .env*
+CelestialGate-Key.pem
 
 # compiled output
-# /dist
+/dist
 /node_modules
 
 # Logs

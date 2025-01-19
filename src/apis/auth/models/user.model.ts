@@ -10,7 +10,8 @@ import {
   Unique,
   UpdatedAt,
 } from 'sequelize-typescript';
-import { nanoid } from 'nanoid';
+import { Helper } from '@/utils/helper';
+import ValidationConstant from '@/constants/validation.constant';
 
 @Table({ tableName: 'auth_users' })
 export class User extends Model {
@@ -20,13 +21,13 @@ export class User extends Model {
   @Column
   id: number;
 
-  @Default(nanoid)
+  @Default(() => Helper.generateUID())
   @Column
   uid: string;
 
   @Unique({
-    name: 'constraint_username',
-    msg: 'Username already used',
+    name: ValidationConstant.USERNAME_UNIQUE_NAME,
+    msg: ValidationConstant.USERNAME_UNIQUE_MESSAGE,
   })
   @Column({
     field: 'username',
@@ -34,8 +35,8 @@ export class User extends Model {
   username: string;
 
   @Unique({
-    name: 'constraint_email',
-    msg: 'Email already used',
+    name: ValidationConstant.EMAIL_UNIQUE_NAME,
+    msg: ValidationConstant.EMAIL_UNIQUE_MESSAGE,
   })
   @Column
   email: string;
@@ -50,9 +51,6 @@ export class User extends Model {
 
   @Column({ defaultValue: false, field: 'is_verified' })
   isVerified: boolean;
-
-  @Column({ defaultValue: 'on-boarding' })
-  status: string;
 
   @CreatedAt
   @Column({

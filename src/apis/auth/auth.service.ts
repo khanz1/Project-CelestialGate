@@ -10,46 +10,38 @@ import { InjectModel } from '@nestjs/sequelize';
 import { SignUpDto } from './dto/sign-up.dto';
 import { ConfigService } from '@nestjs/config';
 import { UniqueConstraintError, ValidationError } from 'sequelize';
-import { Helper } from './auth.helper';
 import { SignInDto } from './dto/sign-in.dto';
-import * as url from 'url';
 import { HttpService } from '@nestjs/axios';
 import { catchError, firstValueFrom } from 'rxjs';
 import { OAuth } from './models/oauth.model';
 import { OAUTH_PROVIDER } from './auth.types';
 import { nanoid } from 'nanoid';
+import { AuthHelper } from '@/utils/auth.helper';
+import { Helper } from '@/utils/helper';
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
-  private readonly CLIENT_URL = this.configService.get<string>('CLIENT_URL');
   constructor(
     @InjectModel(User) private readonly userModel: typeof User,
     @InjectModel(OAuth) private readonly oauthModel: typeof OAuth,
-    private readonly configService: ConfigService,
-    private helper: Helper,
+    private helper: AuthHelper,
     private readonly httpService: HttpService,
   ) {}
   async signUp(data: SignUpDto) {
-    const newUser = data as Partial<User>;
-    newUser.password = this.helper.hashPassword(data.password);
-    newUser.status = 'on-boarding';
+    const newUser: Partial<User> = data;
+    newUser.password = await this.helper.hashPassword(data.password);
 
     try {
+      newUser.uid = Helper.generateUID();
       const user = await this.userModel.create(newUser);
-
-      const URI = url.format({
-        pathname: `${this.CLIENT_URL}/auth/validate`,
-        query: { uid: user.uid },
-      });
-
-      this.logger.log(`Validation URL: ${URI} will be sent to ${user.email}`);
+      console.log(user, '<<< user');
 
       return {
         accessToken: await this.helper.signToken({ uid: user.uid }),
       };
     } catch (err) {
-      console.log(err);
+      console.log(err, '<<< err');
       if (
         err instanceof UniqueConstraintError ||
         err instanceof ValidationError
@@ -67,22 +59,10 @@ export class AuthService {
 
   async signIn(data: SignInDto) {
     this.logger.log(`Sign in with ${JSON.stringify(data)}`);
-    let user: Partial<User>;
     try {
-      if (!data.username && !data.email) {
-        throw new BadRequestException({
-          message: 'Username or email is required',
-        });
-      }
-      if (data.username) {
-        user = await this.userModel.findOne({
-          where: { username: data.username },
-        });
-      }
-
-      if (data.email) {
-        user = await this.userModel.findOne({ where: { email: data.email } });
-      }
+      let user = await this.userModel.findOne({
+        where: { email: data.email },
+      });
 
       if (!user) {
         throw new UnauthorizedException({
@@ -90,7 +70,6 @@ export class AuthService {
         });
       }
 
-      console.log(user);
       const isPasswordMatch = this.helper.comparePassword(
         data.password,
         user.password,

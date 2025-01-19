@@ -38,7 +38,7 @@ async function bootstrap() {
   Logger.log(`--------- ⭐ Project ${projectName} ⭐ -------------`);
   Logger.log(`🚀 App running on         : ${serverHost}`);
   Logger.log(`👨 contact dev            : assistance.xavier@gmail.com 🚀`);
-  Logger.log(`⚓ Environment            : ${NODE_ENV}`);
+  Logger.log(`🔥 Environment            : ${NODE_ENV}`);
   Logger.log(`📦 Version                : ${projectVersion}`);
   Logger.log(`----------------------------------------------------`);
 }

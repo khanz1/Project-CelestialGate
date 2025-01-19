@@ -13,9 +13,7 @@ import { OwnedFile } from './apis/astral-archive/models/owned-files.model';
 import { GalacticPathModule } from './apis/galactic-path/galactic-path.module';
 import { Redirect } from './apis/galactic-path/model/redirect.model';
 import { RedirectLog } from './apis/galactic-path/model/redirect-log.model';
-import { Helper } from './utils/helper';
-        import pg from 'pg';
-
+import { AuthHelper } from './utils/auth.helper';
 
 @Module({
   imports: [
@@ -29,9 +27,8 @@ import { Helper } from './utils/helper';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        return {
+        const config = {
           dialect: configService.get('DB_DIALECT'),
-          dialectModule: pg,
           host: configService.get('DB_HOST'),
           port: configService.get('DB_PORT'),
           username: configService.get('DB_USERNAME'),
@@ -40,12 +37,13 @@ import { Helper } from './utils/helper';
           models: [User, OAuth, LogsApi, OwnedFile, Redirect, RedirectLog],
           logging: (sql) => Logger.verbose(sql),
         };
+        return config;
       },
     }),
     GalacticPathModule,
   ],
   controllers: [AppController],
-  providers: [AppService, Helper],
+  providers: [AppService, AuthHelper],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

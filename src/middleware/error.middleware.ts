@@ -21,20 +21,28 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
 
     let httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
-    let res = {};
-    this.logger.warn(exception);
-    console.log(exception);
+    let res: { message: string | string[] } = {
+      message: 'Internal server error',
+    };
+
+    console.log(exception, '<<< exception');
 
     if (exception instanceof HttpException) {
+      this.logger.error(exception.getResponse(), '<<< response');
+      this.logger.error(exception.stack, '<<< stack');
       httpStatus = exception.getStatus();
-      res = exception.getResponse();
+      res = exception.getResponse() as { message: string | string[] };
     }
 
     const responseBody = {
-      ...res,
+      data: {
+        message: Array.isArray(res.message)
+          ? res.message?.[res.message?.length - 1]
+          : res.message,
+      },
       statusCode: httpStatus,
       timestamp: new Date().toISOString(),
-      path: httpAdapter.getRequestUrl(ctx.getRequest()),
+      // path: httpAdapter.getRequestUrl(ctx.getRequest()),
     };
 
     httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);

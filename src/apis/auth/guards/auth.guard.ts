@@ -9,14 +9,14 @@ import {
 import { Request } from 'express';
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from '../models/user.model';
-import { Helper } from '../../../utils/helper';
+import { AuthHelper } from '@/utils/auth.helper';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   private logger = new Logger(AuthGuard.name);
 
   constructor(
-    private helper: Helper,
+    private helper: AuthHelper,
     @InjectModel(User)
     private readonly userModel: typeof User,
   ) {}

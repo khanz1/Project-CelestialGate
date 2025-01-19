@@ -11,7 +11,7 @@ export const HOST = process.env.DB_HOST || 'localhost';
 export const PORT = +(process.env.DB_PORT || 5432);
 export const USERNAME = process.env.DB_USERNAME || 'postgres';
 export const PASSWORD = process.env.DB_PASSWORD || 'postgres';
-export const DATABASE = process.env.DB_DATABASE || 'test_db';
+export const DATABASE = process.env.DB_DATABASE || 'pd_celestial_gate';
 
 export const client = new Client({
   host: HOST,

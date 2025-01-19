@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBodyDto } from './dto/create-body.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { Redirect } from './model/redirect.model';
 import { RedirectLog } from './model/redirect-log.model';
+import ResponseConstant from '@/constants/response.constant';
 
 @Injectable()
 export class GalacticPathService {
@@ -20,17 +21,33 @@ export class GalacticPathService {
     return await this.redirectModel.findAll();
   }
 
-  async getRedirectById(id: string) {
+  async getRedirectById(id: number) {
     return await this.redirectModel.findByPk(id);
   }
 
   async getRedirectFromUrl(fromUrl: string) {
-    return await this.redirectModel.findOne({
+    const redirect = await this.redirectModel.findOne({
       where: { fromUrl },
     });
+
+    if (!redirect) {
+      throw new NotFoundException(
+        ResponseConstant.GET_REDIRECT_NOT_FOUND(fromUrl),
+      );
+    }
+
+    return redirect;
   }
 
   async createRedirectLog(body: Partial<RedirectLog>) {
+    const redirect = await this.getRedirectById(body.redirectId);
+    if (!redirect) {
+      throw new NotFoundException(
+        ResponseConstant.GET_REDIRECT_NOT_FOUND(body.redirectId),
+      );
+    }
+
+    await redirect.increment('access_count');
     return await this.redirectLogModel.create(body);
   }
 
@@ -38,7 +55,7 @@ export class GalacticPathService {
     return await this.redirectLogModel.findAll();
   }
 
-  async getRedirectLogsByRedirectId(redirectId: string) {
+  async getRedirectLogsByRedirectId(redirectId: number) {
     return await this.redirectLogModel.findAll({
       where: { redirectId },
     });
