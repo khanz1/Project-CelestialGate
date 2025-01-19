@@ -34,6 +34,14 @@ import { AuthHelper } from './utils/auth.helper';
           username: configService.get('DB_USERNAME'),
           password: configService.get('DB_PASSWORD'),
           database: configService.get('DB_DATABASE'),
+          ...(configService.get('NODE_ENV') === 'production' && {
+            dialectOptions: {
+              ssl: {
+                require: false,
+                rejectUnauthorized: false,
+              },
+            },
+          }),
           models: [User, OAuth, LogsApi, OwnedFile, Redirect, RedirectLog],
           logging: (sql) => Logger.verbose(sql),
         };
