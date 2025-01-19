@@ -1,14 +1,6 @@
-import { DATABASE, PASSWORD, USERNAME } from './pg-connection';
+import sequelize from './pg-connection';
 import { nanoid } from 'nanoid';
 import bcrypt from 'bcrypt';
-import { Sequelize } from 'sequelize-typescript';
-
-const sequelize = new Sequelize({
-  database: DATABASE,
-  dialect: 'postgres',
-  username: USERNAME,
-  password: PASSWORD,
-});
 
 const queryInterface = sequelize.getQueryInterface();
 

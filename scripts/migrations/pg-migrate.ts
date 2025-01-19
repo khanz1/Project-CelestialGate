@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs/promises';
-import { client } from './pg-connection';
+import sequelize, { client } from './pg-connection';
 import * as process from 'process';
 
 (async () => {
@@ -8,7 +8,8 @@ import * as process from 'process';
   const sqlScript = await fs.readFile(sqlFilePath, 'utf-8');
   await client.connect();
 
-  const result = await client.query<[]>(sqlScript);
+  // const result = await client.query<[]>(sqlScript);
+  const result = await sequelize.query(sqlScript);
   console.log(`Migrations applied: ${(result as unknown as []).length}`);
 
   await client.end();
