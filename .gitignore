@@ -2,6 +2,7 @@
 .env
 .env*
 CelestialGate-Key.pem
+ecosystem.config.js
 
 # compiled output
 /dist
