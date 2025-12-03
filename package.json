@@ -28,7 +28,7 @@
     "db:init": "export NODE_ENV=development && npm run db:migrate:dev && npm run db:seed:dev"
   },
   "dependencies": {
-    "@nestjs-modules/mailer": "^1.9.1",
+    "@nestjs-modules/mailer": "^1.11.2",
     "@nestjs/axios": "^3.0.1",
     "@nestjs/cache-manager": "^3.0.1",
     "@nestjs/common": "^10.0.0",
@@ -47,7 +47,7 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "nanoid": "^3.3.7",
-    "nodemailer": "^6.9.7",
+    "nodemailer": "^7.0.11",
     "pg": "^8.11.3",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.2",
